@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { getDoc, doc, setDoc } from 'firebase/firestore';
+import { MdOutlineLogin } from "react-icons/md";
 import { IoBookmarkSharp } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
 import { MdLocalMovies } from 'react-icons/md';
-import { db } from '../pages/firebase';
-const Footer = () => {
+import { db,auth } from './firebase'
+const Footer = ({onLogin}) => {
   const [movies, setMovies] = useState([]);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const userUid = localStorage.getItem('myUserId');
   const movieRecommendation = async () => {
-    const moviedot = doc(db, 'moviseBook', '100');
+    const moviedot = doc(db, 'moviseBook', userUid);
     const snapshot = await getDoc(moviedot);
 
     if (snapshot.exists()) {
@@ -21,21 +24,27 @@ const Footer = () => {
     }
   };
   const getData = async (move) => {
-    await setDoc(doc(db, 'accomodations', '10'), {
+    await setDoc(doc(db, 'accomodations', userUid), {
       details: move, // Or save entire 'responses' array if you prefer
     });
     console.log('Saved');
   };
   useEffect(() => {
     movieRecommendation();
+     auth.onAuthStateChanged(async (user) => {
+                                          if (user) {
+      setLoggedIn(true);
+      
+                                          }})
   }, []);
 
   return (
     <>
-      <div className=' bg-gray-900  z-0 min-h-screen w-screen overflow-hidden'>
+{ loggedIn && (
+ <div className=' bg-gray-900  z-0 min-h-screen w-screen overflow-hidden'>
         <div>
           <h1 className='text-4xl pl-27 md:pl-45 bg-gray-900  text-white w-full h-17 pt-14 flex gap-3'>
-            Bookmarks{' '}
+            WatchList{' '}
             <IoBookmarkSharp
               className='hover:text-red-700 mt-1 cursor-pointer'
               size={38}
@@ -54,6 +63,19 @@ const Footer = () => {
           </div>
         </div>
       </div>
+
+
+)}
+      {!loggedIn &&
+(
+          <div className='bg-gray-900 z-0 min-h-screen w-screen overflow-hidden'>
+            <h1 className='text-2xl md:text-4xl bg-gray-900 text-white w-full h-17 pt-54 text-center'>
+              Please Login to view your WatchList <MdOutlineLogin className='inline-block text-red-500 cursor-pointer hover:text-red-300 ease-out delay-100' onClick={onLogin} />
+            </h1>
+          </div>
+
+        )
+      }
     </>
   );
 };

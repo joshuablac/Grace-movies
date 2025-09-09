@@ -2,27 +2,27 @@ import React from 'react';
 import './App.css';
 import { useEffect } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import { db } from './firebase'; // Adjust the import path as necessary
-import Login from './components/login';
+import { db} from './firebase'; // Adjust the import path as necessary
+import Login from './component/Login';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Project from './pages/Project';
 import Navbar from './pages/Navbar';
 import Home from './pages/Home';
-import Footer from './components/Footer';
+import Footer from './component/Footer';
 import Buttons from './props/Buttons';
-import Signup from './components/Signup';
+import Signup from './component/Signup';
 import { doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
-  if (isLoggedIn) {
-    localStorage.setItem('isLoggedIn', 'true');
-  } else {
-    localStorage.removeItem('isLoggedIn');
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => {
+    const stored = localStorage.getItem('isLoggedIn');
+    if (stored === null) {
+      return true; // default value on first load
+    }
   }
+  );
   const fetchUserData = async () => {
     const options = {
       method: 'GET',
@@ -81,7 +81,7 @@ function App() {
     }
   };
   useEffect(() => {
-    fetchUserData();
+    return () => fetchUserData();
   }, []);
   return (
     <>
@@ -107,13 +107,13 @@ function App() {
           </div>
 
           <Routes>
-            <Route path='/' element={<Home />} />
-            <Route path='/project' element={<Project />} />
+            <Route path='*' element={<Home onLogin={()=>{setIsLoggedIn(false)}}/>} />
+            <Route path='/project' element={<Project  onLogin={()=>{setIsLoggedIn(false)}}/>} />
             <Route path='/home' element={<Buttons />} />
             <Route path='/login' element={<Login />} />
             <Route path='/homes' element={<About />} />
             <Route path='/tvicons' element={<Contact />} />
-            <Route path='/foot' element={<Footer />} />
+            <Route path='/foot' element={<Footer  onLogin={()=>{setIsLoggedIn(false)}}/>} />
             <Route path='/shows' element={<About />} />
             <Route path='*' element={<Navigate to='/' />} />
           </Routes>

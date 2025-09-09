@@ -1,22 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useContext } from 'react';
 import { MdLocalMovies } from "react-icons/md";
 import { IoBookmarkSharp } from "react-icons/io5";
+import { UserContext } from '../context';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { db } from './firebase';
 import { doc, setDoc, getDoc, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
 
 const Contact = () => {
+  const navigate =useNavigate()
   const [move, setMove] = useState([]);
-  const [fullDetails, setDetails] = useState([]);
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
-console.log(fullDetails)
+   const { setDetails } = useContext(UserContext);
+const userUid = localStorage.getItem('myUserId');
   const handleBookmarkClick = async (moviee) => {
     setBookmarkedMovies(prev => {
       const isAlreadyAdded = prev.some(m => m.id === moviee.id);
       if (isAlreadyAdded) return prev;
       const update = [...prev, moviee];
       const books = async () => {
-        const savebook = doc(db, 'moviseBook', "100");
+        const savebook = doc(db, 'moviseBook',userUid);
         await setDoc(savebook, {
           details: update,
         });
@@ -27,7 +30,7 @@ console.log(fullDetails)
   };
 
   const filterBook = async (movie) => {
-    const savebook = doc(db, "moviseBook", "100");
+    const savebook = doc(db, "moviseBook",userUid);
     const snap = await getDoc(savebook);
     const existingBookmarks = snap.exists() ? snap.data().details || [] : [];
     const isAlreadyBookmarked = existingBookmarks.some(m => m.id === movie.id);
@@ -46,11 +49,10 @@ console.log(fullDetails)
   };
 
   const getData = async (move) => {
+    console.log(move)
     setDetails([move]);
-    window.location.href = './project'
-    await setDoc(doc(db, 'accomodations', '10'), {
-      details: move,
-    });
+
+    navigate('/project')
   };
 
   const functiondata = async () => {
